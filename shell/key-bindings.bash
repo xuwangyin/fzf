@@ -29,6 +29,16 @@ __fzf_select__() {
   FZF_DEFAULT_COMMAND=${FZF_CTRL_T_COMMAND:-} \
   FZF_DEFAULT_OPTS=$(__fzf_defaults "--reverse --walker=file,dir,follow,hidden --scheme=path" "${FZF_CTRL_T_OPTS-} -m") \
   FZF_DEFAULT_OPTS_FILE='' $(__fzfcmd) "$@" |
+  # local cmd opts
+  # cmd="${FZF_CTRL_T_COMMAND:-"command find -L . -mindepth 1 -maxdepth 5 \\( -path '*/\\.*' -o -path '~/anaconda3/*' -o -fstype 'sysfs' -o -fstype 'devfs' -o -fstype 'devtmpfs' -o -fstype 'proc' \\) -prune \
+  #   -o -type f -print \
+  #   -o -type d -print \
+  #   -o -type l -print 2> /dev/null | cut -b3-"}"
+  # opts="--height ${FZF_TMUX_HEIGHT:-90%} \
+  #     --preview 'bat --theme=ansi --color=always {}' --preview-window 'right,50%,border-bottom,+{2}+3/3,~3'\
+  #     --bind=ctrl-z:ignore --reverse ${FZF_DEFAULT_OPTS-} ${FZF_CTRL_T_OPTS-} -m"
+  # eval "$cmd" |
+  #   FZF_DEFAULT_OPTS="$opts" $(__fzfcmd) "$@" |
     while read -r item; do
       printf '%q ' "$item"  # escape special chars
     done
@@ -103,6 +113,12 @@ else # awk - fallback for POSIX systems
   }
 fi
 
+
+my_fzf_history() {
+    history -n  # Reload the history
+    __fzf_history__  # Then call the original fzf history function
+}
+
 # Required to refresh the prompt after fzf
 bind -m emacs-standard '"\er": redraw-current-line'
 
@@ -131,9 +147,12 @@ else
   fi
 
   # CTRL-R - Paste the selected command from history into the command line
-  bind -m emacs-standard -x '"\C-r": __fzf_history__'
-  bind -m vi-command -x '"\C-r": __fzf_history__'
-  bind -m vi-insert -x '"\C-r": __fzf_history__'
+  # bind -m emacs-standard -x '"\C-r": __fzf_history__'
+  # bind -m vi-command -x '"\C-r": __fzf_history__'
+  # bind -m vi-insert -x '"\C-r": __fzf_history__'
+  bind -m emacs-standard -x '"\C-r": my_fzf_history'
+  bind -m vi-command -x '"\C-r": my_fzf_history'
+  bind -m vi-insert -x '"\C-r": my_fzf_history'
 fi
 
 # ALT-C - cd into the selected directory
